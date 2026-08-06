@@ -13,5 +13,5 @@ type ErrorEvent struct {
 func (ErrorEvent) isEvent() {}
 
 type EventSource interface {
-	Serve(ctx context.Context, out chan<- Event) error
+	ServeEvents(ctx context.Context, out chan<- Event) error
 }

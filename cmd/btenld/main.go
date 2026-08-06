@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	control "github.com/mf751/btenl.git/internal/control_source"
+	"github.com/mf751/btenl.git/internal/controls"
 	"github.com/mf751/btenl.git/internal/daemon"
 )
 

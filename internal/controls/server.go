@@ -35,7 +35,7 @@ func (c *ControlSource) startSources(ctx context.Context) {
 
 func (c *ControlSource) forwardSource(ctx context.Context, src types.EventSource) {
 	go func() {
-		err := src.Serve(ctx, c.events)
+		err := src.ServeEvents(ctx, c.events)
 		// NOTE: runs only when the source stops serving
 		if err != nil && ctx.Err() == nil {
 			select {
@@ -47,7 +47,7 @@ func (c *ControlSource) forwardSource(ctx context.Context, src types.EventSource
 	}()
 }
 
-func (c *ControlSource) Serve(ctx context.Context, out chan<- types.Event) error {
+func (c *ControlSource) ServeEvents(ctx context.Context, out chan<- types.Event) error {
 	c.startSources(ctx)
 
 	for {

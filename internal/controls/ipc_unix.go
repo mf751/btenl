@@ -49,7 +49,7 @@ func (c *ControlConn) send(res types.ControlResponse) {
 	}
 }
 
-func (u *UnixIPCSource) Serve(ctx context.Context, out chan<- types.Event) error {
+func (u *UnixIPCSource) ServeEvents(ctx context.Context, out chan<- types.Event) error {
 	// NOTE: remove old socket if exists
 	if err := os.RemoveAll(u.socketPath); err != nil {
 		return err

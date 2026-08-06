@@ -2,7 +2,6 @@ package daemon
 
 import (
 	"context"
-	"time"
 
 	"github.com/mf751/btenl.git/internal/types"
 )
@@ -36,7 +35,7 @@ func (d *Daemon) ForwardSource(src types.EventSource) {
 	default:
 	}
 	go func() {
-		err := src.Serve(d.ctx, d.events)
+		err := src.ServeEvents(d.ctx, d.events)
 		// NOTE: runs only when the source stops serving
 		if err != nil {
 			select {
@@ -50,16 +49,9 @@ func (d *Daemon) ForwardSource(src types.EventSource) {
 
 // INFO: Daemon Event Loop
 func (d *Daemon) Run() {
-	select {
-	case <-d.ctx.Done():
-		return
-	default:
-	}
-
 	for {
 		select {
 		case ev := <-d.events:
-			time.Sleep(5 * time.Second)
 			switch e := ev.(type) {
 			case types.ControlEvent:
 				d.handleControlEvent(e)
