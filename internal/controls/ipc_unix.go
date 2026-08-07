@@ -1,3 +1,14 @@
+// UnixIPCSource (unix ipc control events listener).
+// it implements the ControlEventSource and takes ControlSink to send control
+// and Error events to.
+// it creates a unix ipc litener that listenes on socketPath.
+// it receives exactly one json request from connections and keeps them alive.
+// for each connection open it creates a goroutine to handle the connection
+// which stays until the connection is closed by either side, it decodes the
+// request and creates types.ControlEvent and passes it to Sink.Control and
+// waits for responses from the Sink on the `ch` channel it passed to Sink
+// when the channel is closed it kills the goroutine and closes the connection
+
 //go:build unix
 
 package control
