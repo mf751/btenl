@@ -20,6 +20,10 @@
 ## Getting started
 
 ```bash
+# clone the repo
+git clone https://github.com/mf751/btenl.git
+cd btenl
+
 # build both binaries
 make build
 
