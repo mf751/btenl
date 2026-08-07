@@ -10,6 +10,7 @@ package daemon
 
 import (
 	"context"
+	"runtime"
 
 	"github.com/mf751/btenl.git/internal/logger"
 	"github.com/mf751/btenl.git/internal/types"
@@ -112,13 +113,13 @@ func (d *Daemon) errorWorker() {
 
 // INFO: Daemon Event Loop
 func (d *Daemon) Run() {
-	const eventWorkers int = 4
+	eventWorkers := min(runtime.NumCPU(), 6)
 	for range eventWorkers {
 		go d.eventWorker()
 	}
 	go d.errorWorker()
 
-	d.logger.Info("Daemon Started")
+	d.logger.Infof("Daemon Started (%d workers)", eventWorkers)
 
 	// NOTE: keep running until ctx is done
 	<-d.ctx.Done()
