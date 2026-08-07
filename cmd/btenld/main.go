@@ -16,9 +16,9 @@ func main() {
 
 	unixIPC := control.NewUnixIPCSource("/tmp/btenld.sock")
 
-	controlMux := control.New(unixIPC)
+	d := daemon.New(ctx)
 
-	d := daemon.New(ctx, controlMux)
+	d.ForwardControlSource(unixIPC)
 
 	d.Run()
 }
