@@ -59,6 +59,10 @@ func (d *Daemon) Errors(event types.ErrorEvent) {
 	}
 }
 
+func (d *Daemon) Stop() {
+	d.kill()
+}
+
 func forward[S types.Sink](d *Daemon, src types.EventSource[S], sink S, et types.EventType) {
 	select {
 	case <-d.ctx.Done():
