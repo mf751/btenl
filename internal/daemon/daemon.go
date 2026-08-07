@@ -1,3 +1,6 @@
+// Daemon (main event loop)
+// can receive multiple EventSources( control / connections ) via daemon.ForwardSource functions
+
 package daemon
 
 import (
@@ -33,6 +36,13 @@ func (d *Daemon) Controls(event types.ControlEvent) {
 	}
 }
 
+func (d *Daemon) Connections(event types.ConnectionEvent) {
+	select {
+	case d.connectionEvents <- event:
+	case <-d.ctx.Done():
+	}
+}
+
 func (d *Daemon) Errors(event types.ErrorEvent) {
 	select {
 	case d.errorEvents <- event:
@@ -40,23 +50,30 @@ func (d *Daemon) Errors(event types.ErrorEvent) {
 	}
 }
 
-func (d *Daemon) ForwardControlSource(src types.ControlEventSource) {
-	// INFO: don't run if context is done
+func forward[S types.Sink](d *Daemon, src types.EventSource[S], sink S) {
 	select {
 	case <-d.ctx.Done():
 		return
 	default:
 	}
+
 	go func() {
-		err := src.ServeEvents(d.ctx, d)
-		// NOTE: runs only when the source stops serving
+		err := src.ServeEvents(d.ctx, sink)
 		if err != nil && d.ctx.Err() == nil {
 			d.Errors(types.ErrorEvent{Err: err})
 		}
 	}()
 }
 
-func (d *Daemon) worker() {
+func (d *Daemon) ForwardControlSource(src types.ControlEventSource) {
+	forward[types.ControlSink](d, src, d)
+}
+
+func (d *Daemon) ForwardConnectionSource(src types.ConnectionEventSource) {
+	forward[types.ConnectionSink](d, src, d)
+}
+
+func (d *Daemon) eventWorker() {
 	for {
 		select {
 		case event := <-d.controlEvents:
@@ -84,8 +101,10 @@ func (d *Daemon) errorWorker() {
 func (d *Daemon) Run() {
 	const eventWorkers int = 4
 	for range eventWorkers {
-		go d.worker()
+		go d.eventWorker()
 	}
 	go d.errorWorker()
+
+	// NOTE: keep running until ctx is done
 	<-d.ctx.Done()
 }
