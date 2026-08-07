@@ -1,10 +1,15 @@
 package types
 
-type ErrorSink interface {
+type Sink interface {
 	Errors(ErrorEvent)
 }
 
 type ControlSink interface {
 	Controls(ControlEvent)
-	ErrorSink
+	Sink
+}
+
+type ConnectionSink interface {
+	Connections(ConnectionEvent)
+	Sink
 }

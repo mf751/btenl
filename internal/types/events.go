@@ -1,15 +1,45 @@
 package types
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
-// NOTE: all events must implement this interface
-type Event interface {
-	isEvent()
+type EventType uint8
+
+const (
+	EventTypeControlCommand EventType = iota
+	EventTypeControlError
+
+	EventTypeConnectionNew
+	EventTypeConnectionData
+	EventTypeConnectionClosed
+	EventTypeConnectionError
+
+	EventTypeError
+)
+
+// NOTE: All Events contain this struct
+type Event struct {
+	StartedAt time.Time
+	Type      EventType
 }
 
-type ControlEventSource interface {
-	ServeEvents(ctx context.Context, sink ControlSink) error
+func NewEvent(eType EventType) Event {
+	return Event{
+		StartedAt: time.Now(),
+		Type:      eType,
+	}
 }
+
+type EventSource[S Sink] interface {
+	ServeEvents(ctx context.Context, sink S) error
+}
+
+type (
+	ControlEventSource    = EventSource[ControlSink]
+	ConnectionEventSource = EventSource[ConnectionSink]
+)
 
 //
 
@@ -17,10 +47,9 @@ type ControlEventSource interface {
 
 // INFO: Error
 type ErrorEvent struct {
+	Event
 	Err error
 }
-
-func (ErrorEvent) isEvent() {}
 
 //
 
@@ -28,14 +57,12 @@ func (ErrorEvent) isEvent() {}
 
 // INFO: Controls layer
 type ControlEvent struct {
+	Event
 	Command string
 	Args    []string
-
-	Send  func(ControlResponse) error
-	Close func()
+	Send    func(ControlResponse) error
+	Close   func()
 }
-
-func (ControlEvent) isEvent() {}
 
 //
 
@@ -43,10 +70,9 @@ func (ControlEvent) isEvent() {}
 
 // INFO: Connections layer
 type ConnectionEvent struct {
+	Event
 	// Node Node
 	// Data any
 	// send()
 	// close()
 }
-
-func (ConnectionEvent) isEvent() {}
