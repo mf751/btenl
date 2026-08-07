@@ -50,7 +50,7 @@ func (d *Daemon) Errors(event types.ErrorEvent) {
 	}
 }
 
-func forward[S types.Sink](d *Daemon, src types.EventSource[S], sink S) {
+func forward[S types.Sink](d *Daemon, src types.EventSource[S], sink S, et types.EventType) {
 	select {
 	case <-d.ctx.Done():
 		return
@@ -60,17 +60,17 @@ func forward[S types.Sink](d *Daemon, src types.EventSource[S], sink S) {
 	go func() {
 		err := src.ServeEvents(d.ctx, sink)
 		if err != nil && d.ctx.Err() == nil {
-			d.Errors(types.ErrorEvent{Err: err})
+			d.Errors(types.ErrorEvent{Err: err, Event: types.NewEvent(et)})
 		}
 	}()
 }
 
 func (d *Daemon) ForwardControlSource(src types.ControlEventSource) {
-	forward[types.ControlSink](d, src, d)
+	forward[types.ControlSink](d, src, d, types.EventTypeControlError)
 }
 
 func (d *Daemon) ForwardConnectionSource(src types.ConnectionEventSource) {
-	forward[types.ConnectionSink](d, src, d)
+	forward[types.ConnectionSink](d, src, d, types.EventTypeConnectionError)
 }
 
 func (d *Daemon) eventWorker() {
