@@ -32,7 +32,8 @@ type ControlConn struct {
 
 func (c *ControlConn) log(err error) {
 	c.sink.Errors(types.ErrorEvent{
-		Err: err,
+		Err:   err,
+		Event: types.NewEvent(types.EventTypeControlError),
 	})
 }
 
@@ -104,6 +105,7 @@ func (u *UnixIPCSource) handleConnection(c *ControlConn) {
 	ch := make(chan types.ControlResponse, 16)
 
 	event := types.ControlEvent{
+		Event:   types.NewEvent(types.EventTypeControlCommand),
 		Command: req.Command,
 		Args:    req.Args,
 		Send: func(res types.ControlResponse) error {
