@@ -11,6 +11,7 @@ package daemon
 import (
 	"context"
 
+	"github.com/mf751/btenl.git/internal/logger"
 	"github.com/mf751/btenl.git/internal/types"
 )
 
@@ -18,16 +19,19 @@ type Daemon struct {
 	ctx  context.Context
 	kill context.CancelFunc
 
+	logger *logger.Logger
+
 	errorEvents      chan types.ErrorEvent
 	controlEvents    chan types.ControlEvent
 	connectionEvents chan types.ConnectionEvent
 }
 
-func New(ctx context.Context) *Daemon {
+func New(ctx context.Context, logger *logger.Logger) *Daemon {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Daemon{
 		ctx:              ctx,
 		kill:             cancel,
+		logger:           logger,
 		errorEvents:      make(chan types.ErrorEvent, 128),
 		controlEvents:    make(chan types.ControlEvent, 128),
 		connectionEvents: make(chan types.ConnectionEvent, 128),
@@ -110,6 +114,9 @@ func (d *Daemon) Run() {
 	}
 	go d.errorWorker()
 
+	d.logger.Info("Daemon Started")
+
 	// NOTE: keep running until ctx is done
 	<-d.ctx.Done()
+	d.logger.Info("Daemon Stopped")
 }

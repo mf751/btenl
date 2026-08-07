@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mf751/btenl.git/internal/logger"
 	"github.com/mf751/btenl.git/internal/types"
 )
 
@@ -29,7 +30,7 @@ func eventTypeString(t types.EventType) string {
 	}
 }
 
-func logErrorEvent(event types.ErrorEvent) {
+func printErrorEvent(event types.ErrorEvent) {
 	fmt.Print("[" + RED + "EVENTERROR" + RESET + "]")
 	fmt.Print("[" + BLUE + "DATE" + RESET + "]")
 	fmt.Print("[" + RED + prettierDate(event.StartedAt) + RESET + "]")
@@ -40,6 +41,16 @@ func logErrorEvent(event types.ErrorEvent) {
 	fmt.Println()
 }
 
+func logErrorEvent(logger *logger.Logger, event types.ErrorEvent) {
+	logger.Errorf(
+		"EventStarted:%s Type:%s Message:%s",
+		event.StartedAt.Format(time.RFC3339),
+		eventTypeString(event.Type),
+		event.Err.Error(),
+	)
+}
+
 func (d *Daemon) handleErrorEvent(event types.ErrorEvent) {
-	logErrorEvent(event)
+	printErrorEvent(event)
+	logErrorEvent(d.logger, event)
 }
