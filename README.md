@@ -21,7 +21,10 @@
 
 ```bash
 # build both binaries
-go build ./cmd/...
+make build
+
+# install binaries to your Go bin path
+make install
 
 # start the daemon
 ./btenl start
@@ -31,6 +34,12 @@ go build ./cmd/...
 
 # stop the daemon
 ./btenl stop
+
+# remove local binaries
+make remove
+
+# uninstall binaries from your Go bin path
+make uninstall
 ```
 
 ## Usage
