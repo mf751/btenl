@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"os"
 )
@@ -39,7 +40,7 @@ func main() {
 	if err != nil {
 		fmt.Println(`
 daemon is not running
-run btenl start to run daemon
+run "btenl start" to run daemon
 			`)
 		os.Exit(1)
 	}
@@ -55,11 +56,23 @@ run btenl start to run daemon
 		panic(err)
 	}
 
-	var res Response
-	err = json.NewDecoder(conn).Decode(&res)
-	if err != nil {
-		panic(err)
-	}
+	dec := json.NewDecoder(conn)
 
-	fmt.Println(res.Message)
+	for {
+		var res Response
+
+		if err = dec.Decode(&res); err != nil {
+			if err == io.EOF {
+				return
+			}
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println(res.Message)
+
+		if res.Status != 0 {
+			return
+		}
+	}
 }
