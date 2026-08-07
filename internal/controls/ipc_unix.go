@@ -9,7 +9,6 @@ import (
 	"io"
 	"net"
 	"os"
-	"time"
 
 	"github.com/mf751/btenl.git/internal/types"
 )
@@ -26,20 +25,15 @@ func NewUnixIPCSource(socketPath string) *UnixIPCSource {
 
 type ControlConn struct {
 	conn   net.Conn
-	out    chan<- types.Event
+	sink   types.ControlSink
 	ctx    context.Context
 	cancel context.CancelFunc
 }
 
 func (c *ControlConn) log(err error) {
-	error := types.ErrorEvent{
+	c.sink.Errors(types.ErrorEvent{
 		Err: err,
-	}
-	select {
-	case c.out <- error:
-	case <-c.ctx.Done():
-		return
-	}
+	})
 }
 
 func (c *ControlConn) send(res types.ControlResponse) {
@@ -49,7 +43,7 @@ func (c *ControlConn) send(res types.ControlResponse) {
 	}
 }
 
-func (u *UnixIPCSource) ServeEvents(ctx context.Context, out chan<- types.Event) error {
+func (u *UnixIPCSource) ServeEvents(ctx context.Context, sink types.ControlSink) error {
 	// NOTE: remove old socket if exists
 	if err := os.RemoveAll(u.socketPath); err != nil {
 		return err
@@ -82,22 +76,17 @@ func (u *UnixIPCSource) ServeEvents(ctx context.Context, out chan<- types.Event)
 		}
 
 		connCtx, cancel := context.WithCancel(ctx)
-		c := &ControlConn{conn: conn, ctx: connCtx, out: out, cancel: cancel}
+		c := &ControlConn{conn: conn, ctx: connCtx, sink: sink, cancel: cancel}
 
 		go u.handleConnection(c)
 	}
 }
 
 func (u *UnixIPCSource) handleConnection(c *ControlConn) {
+	// NOTE: closes the connection and ends ctx of c when this functoin is exits
 	defer func() {
 		c.conn.Close()
 		c.cancel()
-	}()
-
-	// NOTE: close conn when ctx done
-	go func() {
-		<-c.ctx.Done()
-		c.conn.Close()
 	}()
 
 	var req types.ControlRequest
@@ -112,46 +101,45 @@ func (u *UnixIPCSource) handleConnection(c *ControlConn) {
 		return
 	}
 
-	reply := make(chan types.ControlResponse, 1)
+	ch := make(chan types.ControlResponse, 16)
 
 	event := types.ControlEvent{
 		Command: req.Command,
 		Args:    req.Args,
-		Reply: func(res types.ControlResponse) error {
+		Send: func(res types.ControlResponse) error {
 			select {
-			case reply <- res:
+			case ch <- res:
 				return nil
 			case <-c.ctx.Done():
 				return c.ctx.Err()
 			}
 		},
+		Close: func() {
+			close(ch)
+		},
 	}
 
-	timer := time.NewTimer(30 * time.Second)
-	defer timer.Stop()
-
-	// NOTE: wait for either writing to out or ctx done or 30s
+	// NOTE: send control event to daemon
+	c.sink.Controls(event)
 	select {
-	case c.out <- event:
-	case <-timer.C:
-		c.send(types.ControlResponse{Status: types.StatusTimout, Msg: "connection timed out"})
-		return
 	case <-c.ctx.Done():
-		c.send(types.ControlResponse{Status: types.StatusDaemonDied, Msg: "daemon died"})
 		return
+	default:
 	}
 
-	// NOTE: wait for either res written to or ctx done or 30s
-	select {
-	case res := <-reply:
-		if err := json.NewEncoder(c.conn).Encode(res); err != nil {
-			c.log(err)
+	// NOTE: wait for responses from daemon until c is ended by daemon
+	for {
+		select {
+		case res, ok := <-ch:
+			if !ok {
+				return
+			}
+			if err := json.NewEncoder(c.conn).Encode(res); err != nil {
+				c.log(err)
+				return
+			}
+		case <-c.ctx.Done():
 			return
 		}
-	case <-timer.C:
-		c.send(types.ControlResponse{Status: types.StatusTimout, Msg: "connection timed out"})
-	case <-c.ctx.Done():
-		c.send(types.ControlResponse{Status: types.StatusDaemonDied, Msg: "daemon died"})
-		return
 	}
 }
