@@ -33,6 +33,10 @@ func (l *Logger) Info(msg string) {
 	l.Log(INFO, msg)
 }
 
+func (l *Logger) Infof(format string, args ...any) {
+	l.Log(INFO, fmt.Sprintf(format, args...))
+}
+
 func (l *Logger) Warn(msg string) {
 	l.Log(WARN, msg)
 }
