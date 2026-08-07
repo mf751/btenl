@@ -8,15 +8,24 @@ import (
 
 	"github.com/mf751/btenl.git/internal/controls"
 	"github.com/mf751/btenl.git/internal/daemon"
+	"github.com/mf751/btenl.git/internal/logger"
 )
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
+	logFile, err := os.OpenFile("btenld.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		panic(err)
+	}
+	defer logFile.Close()
+
+	logger := logger.New(logFile)
+
 	unixIPC := control.NewUnixIPCSource("/tmp/btenld.sock")
 
-	d := daemon.New(ctx)
+	d := daemon.New(ctx, logger)
 
 	d.ForwardControlSource(unixIPC)
 
