@@ -3,7 +3,7 @@ package daemon
 import (
 	"time"
 
-	"github.com/mf751/btenl.git/internal/types"
+	"github.com/mf751/btenl.git/internal/shared/types"
 )
 
 func (d *Daemon) handleControlEvent(event types.ControlEvent) {

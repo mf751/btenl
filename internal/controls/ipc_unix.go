@@ -21,7 +21,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/mf751/btenl.git/internal/types"
+	"github.com/mf751/btenl.git/internal/shared/types"
 )
 
 type UnixIPCSource struct {

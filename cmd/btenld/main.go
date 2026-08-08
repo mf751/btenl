@@ -8,7 +8,7 @@ import (
 
 	"github.com/mf751/btenl.git/internal/controls"
 	"github.com/mf751/btenl.git/internal/daemon"
-	"github.com/mf751/btenl.git/internal/logger"
+	"github.com/mf751/btenl.git/internal/shared/logger"
 )
 
 func main() {

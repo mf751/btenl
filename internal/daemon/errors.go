@@ -3,8 +3,8 @@ package daemon
 import (
 	"time"
 
-	"github.com/mf751/btenl.git/internal/logger"
-	"github.com/mf751/btenl.git/internal/types"
+	"github.com/mf751/btenl.git/internal/shared/logger"
+	"github.com/mf751/btenl.git/internal/shared/types"
 )
 
 func eventTypeString(t types.EventType) string {

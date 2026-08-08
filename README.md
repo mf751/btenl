@@ -31,13 +31,13 @@ make build
 make install
 
 # start the daemon
-./btenl start
+btenl start
 
 # send a command
-./btenl <command>
+btenl <command>
 
 # stop the daemon
-./btenl stop
+btenl stop
 
 # remove local binaries
 make remove
@@ -63,6 +63,6 @@ cmd/btenl      CLI client
 cmd/btenld     daemon
 internal/controls   control event sources (unix IPC)
 internal/daemon     daemon core: sinks, workers, handlers
-internal/logger     logging
-internal/types      events, sinks, sources
+internal/shared/logger     logging
+internal/shared/types      events, sinks, sources
 ```

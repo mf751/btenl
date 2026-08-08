@@ -12,8 +12,8 @@ import (
 	"context"
 	"runtime"
 
-	"github.com/mf751/btenl.git/internal/logger"
-	"github.com/mf751/btenl.git/internal/types"
+	"github.com/mf751/btenl.git/internal/shared/logger"
+	"github.com/mf751/btenl.git/internal/shared/types"
 )
 
 type Daemon struct {
