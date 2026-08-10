@@ -8,6 +8,7 @@ import (
 
 	"github.com/mf751/btenl.git/internal/controls"
 	"github.com/mf751/btenl.git/internal/daemon"
+	"github.com/mf751/btenl.git/internal/shared/encryption"
 	"github.com/mf751/btenl.git/internal/shared/logger"
 )
 
@@ -22,6 +23,13 @@ func main() {
 	defer logFile.Close()
 
 	logger := logger.New(logFile)
+
+	id, err := encryption.EnsureIdentity()
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	logger.Info("Identity ready: " + id.Fingerprint())
 
 	unixIPC := control.NewUnixIPCSource("/tmp/btenld.sock")
 
