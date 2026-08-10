@@ -16,6 +16,15 @@ import (
 	"github.com/mf751/btenl.git/internal/shared/types"
 )
 
+type EventSource[S types.Sink] interface {
+	ServeEvents(ctx context.Context, sink S) error
+}
+
+type (
+	ControlEventSource    = EventSource[types.ControlSink]
+	ConnectionEventSource = EventSource[types.ConnectionSink]
+)
+
 type Daemon struct {
 	ctx  context.Context
 	kill context.CancelFunc
@@ -64,7 +73,7 @@ func (d *Daemon) Stop() {
 	d.kill()
 }
 
-func forward[S types.Sink](d *Daemon, src types.EventSource[S], sink S, et types.EventType) {
+func forward[S types.Sink](d *Daemon, src EventSource[S], sink S, et types.EventType) {
 	select {
 	case <-d.ctx.Done():
 		return
@@ -79,11 +88,11 @@ func forward[S types.Sink](d *Daemon, src types.EventSource[S], sink S, et types
 	}()
 }
 
-func (d *Daemon) ForwardControlSource(src types.ControlEventSource) {
+func (d *Daemon) ForwardControlSource(src ControlEventSource) {
 	forward[types.ControlSink](d, src, d, types.EventTypeControlError)
 }
 
-func (d *Daemon) ForwardConnectionSource(src types.ConnectionEventSource) {
+func (d *Daemon) ForwardConnectionSource(src ConnectionEventSource) {
 	forward[types.ConnectionSink](d, src, d, types.EventTypeConnectionError)
 }
 

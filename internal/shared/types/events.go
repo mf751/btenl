@@ -1,7 +1,6 @@
 package types
 
 import (
-	"context"
 	"time"
 )
 
@@ -31,15 +30,6 @@ func NewEvent(eType EventType) Event {
 		Type:      eType,
 	}
 }
-
-type EventSource[S Sink] interface {
-	ServeEvents(ctx context.Context, sink S) error
-}
-
-type (
-	ControlEventSource    = EventSource[ControlSink]
-	ConnectionEventSource = EventSource[ConnectionSink]
-)
 
 //
 
