@@ -6,6 +6,22 @@ import (
 	"github.com/mf751/btenl.git/internal/shared/types"
 )
 
+// EventSource has 2 types:
+//
+//   - ControlEventSource: implemented by all Control Event Providers
+//     that accept a ControlSink to forward Control and Error Events to the sink
+//     and has this signature:
+//     type ControlEventSource interface {
+//         ServeEvents(ctx context.Context, sink ControlSink) error
+//     }
+//
+//   - ConnectionSinkEventSource: implemented by all Connection Event Providers
+//     that accept a ConnectionSink to forward Connection and Error Events to the sink
+//     and has this signature:
+//     type ConnectionEventSource interface {
+//         ServeEvents(ctx context.Context, sink ConnectionSink) error
+//     }
+
 type EventSource[S types.Sink] interface {
 	ServeEvents(ctx context.Context, sink S) error
 }
