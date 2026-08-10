@@ -31,6 +31,12 @@ func main() {
 	}
 	logger.Info("Identity ready: " + id.Fingerprint())
 
+	if _, err := encryption.EnsureCertificate(id); err != nil {
+		logger.Error(err)
+		return
+	}
+	logger.Infof("Certificate ready for: %v", id.Fingerprint())
+
 	unixIPC := control.NewUnixIPCSource("/tmp/btenld.sock")
 
 	d := daemon.New(ctx, logger)

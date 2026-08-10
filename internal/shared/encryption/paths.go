@@ -19,16 +19,16 @@ func dir(base, sub string) (string, error) {
 }
 
 func CertsDir() (string, error) {
-	return dir(".cache", "btenl")
+	return dir(".btenl", "")
 }
 
-func CertsPaths() (string, string, error) {
+func CertsPaths() (string, error) {
 	d, err := CertsDir()
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	return filepath.Join(d, "btenl.crt"), filepath.Join(d, "btenl.key"), nil
+	return filepath.Join(d, "btenl.crt"), nil
 }
 
 func IdentityDir() (string, error) {
