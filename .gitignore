@@ -2,3 +2,4 @@
 /btenld
 vendor
 btenld.log
+go.sum
