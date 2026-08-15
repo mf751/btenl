@@ -20,19 +20,21 @@ type Daemon struct {
 	ctx  context.Context
 	kill context.CancelFunc
 
-	logger *logger.Logger
+	logger  *logger.Logger
+	manager ConnectionManager
 
 	errorEvents      chan types.ErrorEvent
 	controlEvents    chan types.ControlEvent
 	connectionEvents chan types.ConnectionEvent
 }
 
-func New(ctx context.Context, logger *logger.Logger) *Daemon {
+func New(ctx context.Context, manager ConnectionManager, logger *logger.Logger) *Daemon {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Daemon{
 		ctx:              ctx,
 		kill:             cancel,
 		logger:           logger,
+		manager:          manager,
 		errorEvents:      make(chan types.ErrorEvent, 128),
 		controlEvents:    make(chan types.ControlEvent, 128),
 		connectionEvents: make(chan types.ConnectionEvent, 128),
