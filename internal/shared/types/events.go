@@ -61,8 +61,6 @@ type ControlEvent struct {
 // INFO: Connections layer
 type ConnectionEvent struct {
 	Event
-	// Node Node
-	// Data any
-	// send()
-	// close()
+	Node Node
+	Data any
 }

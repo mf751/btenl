@@ -1,5 +1,6 @@
 package types
 
+// Sink represents an event receiver
 type Sink interface {
 	Errors(ErrorEvent)
 }
