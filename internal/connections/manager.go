@@ -22,8 +22,10 @@ func (c *ConnectionMux) Connect(ctx context.Context, ip net.IP) (*types.Node, er
 
 func (c *ConnectionMux) ListNodes() []*types.Node {
 	nodes := []*types.Node{}
+	c.mu.Lock()
 	for key := range c.conns {
 		nodes = append(nodes, &types.Node{ID: key})
 	}
+	c.mu.Unlock()
 	return nodes
 }
