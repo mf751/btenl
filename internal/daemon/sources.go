@@ -15,7 +15,7 @@ import (
 //     ServeEvents(ctx context.Context, sink ControlSink) error
 //     }
 //
-//   - ConnectionSinkEventSource: implemented by all Connection Event Providers
+//   - ConnectionEventSource: implemented by all Connection Event Providers
 //     that accept a ConnectionSink to forward Connection and Error Events to the sink
 //     and has this signature:
 //     type ConnectionEventSource interface {

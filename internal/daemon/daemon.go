@@ -3,7 +3,7 @@
 // it is the highest layer in the communication stack receives pure Event types has no knowledge
 // of the underlying communication methods used
 // implements all Sink interfaces so it can be passed to all EventSource types that need Sink methods
-// to send events to and it forwards them into it's event channels
+// to send events to and it forwards them into its event channels
 // on daemon.Run it creates worker pool that read from the channels and handle the events
 
 package daemon

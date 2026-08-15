@@ -25,7 +25,7 @@ type QuicConnection struct {
 // Implements the Connector interface which provides methods
 // to open and receives connections. It uses the QUIC protocol
 // with encrypted connection using TLS Certificate.
-// they QUIC protocol provides multiple streams by default.
+// the QUIC protocol provides multiple streams by default.
 type QuicConnector struct {
 	addr string
 	cert *tls.Certificate

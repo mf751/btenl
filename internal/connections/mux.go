@@ -7,9 +7,9 @@ import (
 	"github.com/mf751/btenl.git/internal/shared/types"
 )
 
-// connectionMux implements ConnectionsEventSource and receivs multiple
+// connectionMux implements ConnectionsEventSource and receives multiple
 // connection sources and manages connections lifecycle and forwards to
-// the daemon ConnectionEvents which has node field that represnets the
+// the daemon ConnectionEvents which has node field that represents the
 // connection.
 // it also implements the ConnectionManager interface which the daemon
 // uses to access connections and perform actions on connections

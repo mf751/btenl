@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// Long lived certificates because there is no actuall identity
+// Long lived certificates because there is no actual identity
 // in the certificate lifetime itself. Identity comes from the
 // public key carried by the certificate
 const (
@@ -112,7 +112,7 @@ func generateCertificate(id *Identity) (*tls.Certificate, error) {
 		BasicConstraintsValid: true,
 	}
 
-	// NOTE: Returns Cert Bytes with the fileds and the public key as a field and the signature of them as a field
+	// NOTE: Returns Cert Bytes with the fields and the public key as a field and the signature of them as a field
 	der, err := x509.CreateCertificate(rand.Reader, template, template, id.pub, id.priv)
 	if err != nil {
 		return nil, fmt.Errorf("encryption: create certificate: %w", err)

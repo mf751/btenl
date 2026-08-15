@@ -44,7 +44,7 @@ func IdentityPaths() (string, string, error) {
 	return filepath.Join(d, "id_ed25519"), filepath.Join(d, "id_ed25519.pub"), nil
 }
 
-// INFO: writes to a temp file and after finishing renmaes to path to prevent partial writes
+// INFO: writes to a temp file and after finishing renames to path to prevent partial writes
 func writeFileAtomic(path string, data []byte, mode os.FileMode) error {
 	tmp, err := os.CreateTemp(filepath.Dir(path), ".btenl-*")
 	if err != nil {
