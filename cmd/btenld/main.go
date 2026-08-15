@@ -6,10 +6,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/mf751/btenl.git/internal/connections"
 	"github.com/mf751/btenl.git/internal/controls"
 	"github.com/mf751/btenl.git/internal/daemon"
 	"github.com/mf751/btenl.git/internal/shared/encryption"
 	"github.com/mf751/btenl.git/internal/shared/logger"
+	"github.com/mf751/btenl.git/internal/transport"
 )
 
 func main() {
@@ -31,7 +33,8 @@ func main() {
 	}
 	logger.Info("Identity ready: " + id.Fingerprint())
 
-	if _, err := encryption.EnsureCertificate(id); err != nil {
+	cert, err := encryption.EnsureCertificate(id)
+	if err != nil {
 		logger.Error(err)
 		return
 	}
@@ -39,9 +42,14 @@ func main() {
 
 	unixIPC := control.NewUnixIPCSource("/tmp/btenld.sock")
 
-	d := daemon.New(ctx, logger)
+	quicConnector := transport.NewQuicConnector("0.0.0.0:9001", cert)
+
+	connectionMux := connections.NewConnectionMux(quicConnector)
+
+	d := daemon.New(ctx, connectionMux, logger)
 
 	d.ForwardControlSource(unixIPC)
+	d.ForwardConnectionSource(connectionMux)
 
 	d.Run()
 }
