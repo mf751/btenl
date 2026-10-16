@@ -13,6 +13,7 @@ const (
 	StatusDaemonDied
 	StatusDaemonError
 	StatusInvalidRequest
+	StatusInvalidResponse
 	StatusTimout
 )
 
