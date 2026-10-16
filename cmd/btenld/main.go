@@ -18,7 +18,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	logFile, err := os.OpenFile("/tmp/btenld.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0x644)
+	logFile, err := os.OpenFile("/tmp/btenld.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		panic(err)
 	}
@@ -47,6 +47,8 @@ func main() {
 	connectionMux := connections.NewConnectionMux(quicConnector)
 
 	d := daemon.New(ctx, connectionMux, logger)
+
+	connectionMux.SetSink(d)
 
 	d.ForwardControlSource(unixIPC)
 	d.ForwardConnectionSource(connectionMux)
