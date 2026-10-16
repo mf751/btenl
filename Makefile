@@ -11,7 +11,7 @@ run: build
 	@echo "Starting daemon..."
 	./btenl start
 
-install:
+install: build
 	@echo "Installing btenl..."
 	go install ./cmd/btenl
 	@echo "Installing btenld..."
