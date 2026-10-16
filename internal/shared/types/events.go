@@ -11,9 +11,10 @@ const (
 	EventTypeControlError
 
 	EventTypeConnectionNew
-	EventTypeConnectionData
 	EventTypeConnectionClosed
 	EventTypeConnectionError
+
+	EventTypeStreamOpened
 
 	EventTypeError
 )
@@ -61,6 +62,6 @@ type ControlEvent struct {
 // INFO: Connections layer
 type ConnectionEvent struct {
 	Event
-	Node Node
-	Data any
+	ConnID ConnID
+	Stream Stream
 }
