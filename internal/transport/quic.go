@@ -19,6 +19,7 @@ import (
 // returned from new connections can open and accept multiple streams
 type QuicConnection struct {
 	Conn *quic.Conn
+	id   types.ConnID
 }
 
 // QuicConnector
@@ -78,7 +79,7 @@ func (ctr *QuicConnector) Listen(
 			continue
 		}
 
-		go onConn(&QuicConnection{Conn: conn})
+		go onConn(&QuicConnection{Conn: conn, id: types.ConnID(types.NextConnID())})
 	}
 }
 
@@ -107,7 +108,7 @@ func (ctr *QuicConnector) Connect(ctx context.Context, ip net.IP) (types.Conn, e
 
 	_, port, err := net.SplitHostPort(ctr.addr)
 	if err != nil {
-		return &QuicConnection{}, err
+		return nil, err
 	}
 
 	dialCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -115,14 +116,18 @@ func (ctr *QuicConnector) Connect(ctx context.Context, ip net.IP) (types.Conn, e
 
 	conn, err := quic.DialAddr(dialCtx, net.JoinHostPort(ip.String(), port), conf, nil)
 	if err != nil {
-		return &QuicConnection{}, err
+		return nil, err
 	}
 
-	return &QuicConnection{Conn: conn}, nil
+	return &QuicConnection{Conn: conn, id: types.ConnID(types.NextConnID())}, nil
 }
 
-// Since Connection was successful that ensures PublicKey is ed25519
 func (c *QuicConnection) ID() types.ConnID {
+	return c.id
+}
+
+func (c *QuicConnection) NodeID() types.NodeID {
+	// Since Connection was successful that ensures PublicKey is ed25519
 	cert := c.Conn.ConnectionState().TLS.PeerCertificates[0]
 	return sha256.Sum256(cert.PublicKey.(ed25519.PublicKey))
 }
@@ -137,4 +142,8 @@ func (c *QuicConnection) AcceptStream(ctx context.Context) (types.Stream, error)
 
 func (c *QuicConnection) Close() error {
 	return c.Conn.CloseWithError(0, "")
+}
+
+func (c *QuicConnection) Ctx() context.Context {
+	return c.Conn.Context()
 }
