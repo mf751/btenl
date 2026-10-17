@@ -50,23 +50,27 @@ func (d *Daemon) handleControlEvent(event types.ControlEvent) {
 		)
 		event.Close()
 
-	case "connections":
+	case "conns":
 		conns := d.manager.GetConns(d.ctx)
 		s := "Open Connections: \n"
-		for k := range conns {
-			s += fmt.Sprintf("- %d", k)
+		for _, connInfo := range conns {
+			s += fmt.Sprintf(
+				"conn %d --> %v - %v\n",
+				connInfo.ID,
+				connInfo.NodeID.ShortString(),
+				connInfo.IP.String(),
+			)
 		}
 		event.Send(types.ControlResponse{Status: types.StatusSucceed, Msg: s})
 		event.Close()
 
 	case "ping":
-		conns := d.manager.GetConns(d.ctx)
-		stream, err := d.manager.OpenStream(d.ctx, conns[0])
+		stream, err := d.manager.OpenStream(d.ctx, types.ConnID(1))
 		if err != nil {
 			event.Send(
 				types.ControlResponse{
 					Status: types.StatusTimout,
-					Msg:    "failed to open stream with connection" + string(conns[0]),
+					Msg:    "failed to open stream with connection" + string(types.ConnID(1)),
 				},
 			)
 			event.Close()
@@ -77,7 +81,7 @@ func (d *Daemon) handleControlEvent(event types.ControlEvent) {
 			event.Send(
 				types.ControlResponse{
 					Status: types.StatusTimout,
-					Msg:    "failed to write to stream with connection" + string(conns[0]),
+					Msg:    "failed to write to stream with connection" + string(types.ConnID(1)),
 				},
 			)
 			event.Close()
@@ -86,7 +90,7 @@ func (d *Daemon) handleControlEvent(event types.ControlEvent) {
 		event.Send(
 			types.ControlResponse{
 				Status: types.StatusSucceed,
-				Msg:    "Waiting for pong!" + string(conns[0]),
+				Msg:    "Waiting for pong!" + string(types.ConnID(1)),
 			},
 		)
 		res := make([]byte, 5)

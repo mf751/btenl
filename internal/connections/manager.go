@@ -41,6 +41,6 @@ func (c *ConnectionMux) OpenStream(ctx context.Context, connID types.ConnID) (ty
 	return stream, nil
 }
 
-func (c *ConnectionMux) GetConns(ctx context.Context) []types.ConnID {
+func (c *ConnectionMux) GetConns(ctx context.Context) []types.ConnInfo {
 	return c.state.GetAllConns()
 }

@@ -26,22 +26,25 @@ func NewState() *State {
 func (s *State) AddConn(conn types.Conn) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	s.conns[conn.ID()] = conn
 }
 
 func (s *State) GetConn(connID types.ConnID) (types.Conn, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+
 	conn, ok := s.conns[connID]
 	return conn, ok
 }
 
-func (s *State) GetAllConns() []types.ConnID {
+func (s *State) GetAllConns() []types.ConnInfo {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	conns := make([]types.ConnID, 0, len(s.conns))
-	for ci := range s.conns {
-		conns = append(conns, ci)
+
+	conns := []types.ConnInfo{}
+	for _, conn := range s.conns {
+		conns = append(conns, types.ConnInfo{ID: conn.ID(), NodeID: conn.NodeID(), IP: conn.IP()})
 	}
 	return conns
 }

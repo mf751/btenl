@@ -14,7 +14,7 @@ import (
 type ConnectionManager interface {
 	Connect(ctx context.Context, ip net.IP) (types.ConnID, error)
 	OpenStream(ctx context.Context, connID types.ConnID) (types.Stream, error)
-	GetConns(ctx context.Context) []types.ConnID
+	GetConns(ctx context.Context) []types.ConnInfo
 }
 
 func (d *Daemon) handleConnectionEvent(event types.ConnectionEvent) {

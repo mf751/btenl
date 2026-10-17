@@ -147,3 +147,11 @@ func (c *QuicConnection) Close() error {
 func (c *QuicConnection) Ctx() context.Context {
 	return c.Conn.Context()
 }
+
+func (c *QuicConnection) IP() net.IP {
+	addr, ok := c.Conn.RemoteAddr().(*net.UDPAddr)
+	if !ok {
+		return nil
+	}
+	return addr.IP
+}

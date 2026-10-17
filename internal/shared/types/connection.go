@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"io"
+	"net"
 	"sync/atomic"
 )
 
@@ -36,6 +37,11 @@ func (c NodeID) String() string {
 	return hex.EncodeToString(c[:])
 }
 
+// first 12 characters for short visual use
+func (c NodeID) ShortString() string {
+	return hex.EncodeToString(c[:6])
+}
+
 // Represents a peer-to-peer connection between two btenl
 // instances and is kept alive until one peer closes it
 // a connection can have multiple independent bidirectional
@@ -43,8 +49,16 @@ func (c NodeID) String() string {
 type Conn interface {
 	ID() ConnID
 	NodeID() NodeID
+	IP() net.IP
 	Ctx() context.Context
 	Close() error
 	OpenStream(ctx context.Context) (Stream, error)
 	AcceptStream(ctx context.Context) (Stream, error)
+}
+
+// to share Connection Info without exposing the Connection
+type ConnInfo struct {
+	ID     ConnID
+	NodeID NodeID
+	IP     net.IP
 }
