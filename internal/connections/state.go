@@ -3,7 +3,7 @@ package connections
 import (
 	"sync"
 
-	"github.com/mf751/btenl.git/internal/shared/types"
+	"github.com/mf751/btenl/internal/shared/types"
 )
 
 // State holds the runtime state of the ConnectionMux: every connection

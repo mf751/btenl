@@ -6,12 +6,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/mf751/btenl.git/internal/connections"
-	"github.com/mf751/btenl.git/internal/controls"
-	"github.com/mf751/btenl.git/internal/daemon"
-	"github.com/mf751/btenl.git/internal/shared/encryption"
-	"github.com/mf751/btenl.git/internal/shared/logger"
-	"github.com/mf751/btenl.git/internal/transport"
+	"github.com/mf751/btenl/internal/connections"
+	"github.com/mf751/btenl/internal/controls"
+	"github.com/mf751/btenl/internal/daemon"
+	"github.com/mf751/btenl/internal/shared/encryption"
+	"github.com/mf751/btenl/internal/shared/logger"
+	"github.com/mf751/btenl/internal/transport"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package connections
 import (
 	"context"
 
-	"github.com/mf751/btenl.git/internal/shared/types"
+	"github.com/mf751/btenl/internal/shared/types"
 )
 
 // ConnectionMux

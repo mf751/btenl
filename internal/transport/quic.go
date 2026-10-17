@@ -11,7 +11,7 @@ import (
 
 	"github.com/quic-go/quic-go"
 
-	"github.com/mf751/btenl.git/internal/shared/types"
+	"github.com/mf751/btenl/internal/shared/types"
 )
 
 // QuicConnection

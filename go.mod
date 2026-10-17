@@ -1,4 +1,4 @@
-module github.com/mf751/btenl.git
+module github.com/mf751/btenl
 
 go 1.26.5
 
