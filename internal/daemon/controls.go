@@ -11,11 +11,11 @@ import (
 func (d *Daemon) handleControlEvent(event types.ControlEvent) {
 	switch event.Command {
 
-	case "stop":
-		event.Send(types.ControlResponse{Status: types.StatusSucceeded, Msg: "stopping"})
+	case "kill":
+		event.Send(types.ControlResponse{Status: types.StatusSucceeded, Msg: "killing daemon"})
 		event.Close()
 		// NOTE: give the response time to flush before shutting down
-		time.AfterFunc(200*time.Millisecond, d.Stop)
+		time.AfterFunc(200*time.Millisecond, d.Kill)
 
 	case "connect":
 		if len(event.Args) < 1 {

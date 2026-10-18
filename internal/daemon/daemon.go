@@ -62,7 +62,7 @@ func (d *Daemon) Errors(event types.ErrorEvent) {
 	}
 }
 
-func (d *Daemon) Stop() {
+func (d *Daemon) Kill() {
 	d.kill()
 }
 
