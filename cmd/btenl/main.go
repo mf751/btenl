@@ -93,6 +93,61 @@ func start() {
 	os.Exit(1)
 }
 
+// request sends a single request to the running daemon and prints every
+// response it sends back until the daemon closes the connection or returns a
+// failed status.
+func request(req Request) error {
+	conn, err := net.Dial("unix", socketPath)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	if err := json.NewEncoder(conn).Encode(req); err != nil {
+		return err
+	}
+
+	dec := json.NewDecoder(conn)
+
+	for {
+		var res Response
+
+		if err := dec.Decode(&res); err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+
+		fmt.Println(res.Message)
+
+		if res.Status != 0 {
+			return nil
+		}
+	}
+}
+
+// restart asks the running daemon to stop and starts a fresh one. When no
+// daemon is running it simply starts one.
+func restart() {
+	if daemonRunning() {
+		// NOTE: kill is handled by the daemon, we only forward it
+		if err := request(Request{Command: "kill"}); err != nil {
+			fmt.Println("failed to stop daemon:", err)
+			os.Exit(1)
+		}
+
+		// NOTE: the daemon removes its socket when it shuts down. Wait for it
+		// to be gone so the new daemon doesn't race it for the socket.
+		deadline := time.Now().Add(2 * time.Second)
+		for daemonRunning() && time.Now().Before(deadline) {
+			time.Sleep(50 * time.Millisecond)
+		}
+	}
+
+	start()
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("usage: btenl <command> [args...]")
@@ -106,6 +161,9 @@ func main() {
 	case "start":
 		start()
 		return
+	case "restart":
+		restart()
+		return
 	case "help":
 		fmt.Println("")
 		return
@@ -114,43 +172,12 @@ func main() {
 		return
 	}
 
-	conn, err := net.Dial("unix", socketPath)
+	err := request(Request{Command: command, Args: os.Args[2:]})
 	if err != nil {
 		fmt.Println(`
 daemon is not running
 run "btenl start" to run daemon
 			`)
 		os.Exit(1)
-	}
-	defer conn.Close()
-
-	req := Request{
-		Command: command,
-		Args:    os.Args[2:],
-	}
-
-	err = json.NewEncoder(conn).Encode(req)
-	if err != nil {
-		panic(err)
-	}
-
-	dec := json.NewDecoder(conn)
-
-	for {
-		var res Response
-
-		if err = dec.Decode(&res); err != nil {
-			if err == io.EOF {
-				return
-			}
-			fmt.Println(err)
-			return
-		}
-
-		fmt.Println(res.Message)
-
-		if res.Status != 0 {
-			return
-		}
 	}
 }
