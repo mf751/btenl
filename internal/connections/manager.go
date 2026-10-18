@@ -2,7 +2,6 @@ package connections
 
 import (
 	"context"
-	"errors"
 	"net"
 
 	"github.com/mf751/btenl/internal/shared/types"
@@ -27,10 +26,25 @@ func (c *ConnectionMux) Connect(ctx context.Context, ip net.IP) (types.ConnID, e
 	return conn.ID(), nil
 }
 
+func (c *ConnectionMux) Disconnect(connID types.ConnID) error {
+	conn, ok := c.state.GetConn(connID)
+	if !ok {
+		return types.ErrConnNotFound
+	}
+
+	err := conn.Close()
+	if err != nil {
+		return err
+	}
+
+	c.state.DeleteConn(connID)
+	return nil
+}
+
 func (c *ConnectionMux) OpenStream(ctx context.Context, connID types.ConnID) (types.Stream, error) {
 	conn, ok := c.state.GetConn(connID)
 	if !ok {
-		return nil, errors.New("no connection with given id")
+		return nil, types.ErrConnNotFound
 	}
 
 	stream, err := conn.OpenStream(ctx)
@@ -41,6 +55,6 @@ func (c *ConnectionMux) OpenStream(ctx context.Context, connID types.ConnID) (ty
 	return stream, nil
 }
 
-func (c *ConnectionMux) GetConns(ctx context.Context) []types.ConnInfo {
+func (c *ConnectionMux) GetConns() []types.ConnInfo {
 	return c.state.GetAllConns()
 }

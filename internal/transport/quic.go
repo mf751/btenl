@@ -5,7 +5,6 @@ import (
 	"crypto/ed25519"
 	"crypto/sha256"
 	"crypto/tls"
-	"errors"
 	"net"
 	"time"
 
@@ -41,26 +40,11 @@ func (ctr *QuicConnector) Listen(
 	onConn func(types.Conn),
 	onErr func(error),
 ) error {
-	conf := &tls.Config{
-		Certificates: []tls.Certificate{*ctr.cert},
-		NextProtos:   []string{"btenl"},
-
-		ClientAuth: tls.RequireAnyClientCert,
-
-		VerifyConnection: func(state tls.ConnectionState) error {
-			if len(state.PeerCertificates) == 0 {
-				return errors.New("no peer Certificate")
-			}
-
-			if _, ok := state.PeerCertificates[0].PublicKey.(ed25519.PublicKey); !ok {
-				return errors.New("peer Certificate Public Key must use ed25519")
-			}
-
-			return nil
-		},
-	}
-
-	listener, err := quic.ListenAddr(ctr.addr, conf, nil)
+	listener, err := quic.ListenAddr(
+		ctr.addr,
+		TLSConf(ctr.cert),
+		QuicConf(),
+	)
 	if err != nil {
 		return err
 	}
@@ -84,24 +68,6 @@ func (ctr *QuicConnector) Listen(
 }
 
 func (ctr *QuicConnector) Connect(ctx context.Context, ip net.IP) (types.Conn, error) {
-	conf := &tls.Config{
-		Certificates:       []tls.Certificate{*ctr.cert},
-		NextProtos:         []string{"btenl"},
-		InsecureSkipVerify: true,
-
-		VerifyConnection: func(state tls.ConnectionState) error {
-			if len(state.PeerCertificates) == 0 {
-				return errors.New("no peer Certificate")
-			}
-
-			if _, ok := state.PeerCertificates[0].PublicKey.(ed25519.PublicKey); !ok {
-				return errors.New("peer Certificate must use ed25519")
-			}
-
-			return nil
-		},
-	}
-
 	if isSelfAddr(ip) {
 		return nil, ErrOwnIPConnect
 	}
@@ -114,7 +80,9 @@ func (ctr *QuicConnector) Connect(ctx context.Context, ip net.IP) (types.Conn, e
 	dialCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	conn, err := quic.DialAddr(dialCtx, net.JoinHostPort(ip.String(), port), conf, nil)
+	conn, err := quic.DialAddr(
+		dialCtx, net.JoinHostPort(ip.String(), port), TLSConf(ctr.cert), QuicConf(),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -140,6 +108,7 @@ func (c *QuicConnection) AcceptStream(ctx context.Context) (types.Stream, error)
 	return c.Conn.AcceptStream(ctx)
 }
 
+// Synchronous close just sends a close error and tears the conn
 func (c *QuicConnection) Close() error {
 	return c.Conn.CloseWithError(0, "")
 }

@@ -13,14 +13,16 @@ import (
 // methods to initiate connections or perform actions on connected nodes
 type ConnectionManager interface {
 	Connect(ctx context.Context, ip net.IP) (types.ConnID, error)
+	Disconnect(connID types.ConnID) error
 	OpenStream(ctx context.Context, connID types.ConnID) (types.Stream, error)
-	GetConns(ctx context.Context) []types.ConnInfo
+	GetConns() []types.ConnInfo
 }
 
 func (d *Daemon) handleConnectionEvent(event types.ConnectionEvent) {
 	buff := make([]byte, 20)
 
-	if event.Type != types.EventTypeConnectionError {
+	if event.Type != types.EventTypeConnectionError &&
+		event.Type != types.EventTypeConnectionClosed {
 		n, err := event.Stream.Read(buff)
 		if err != nil {
 			return

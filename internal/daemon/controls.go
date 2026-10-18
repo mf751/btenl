@@ -12,7 +12,7 @@ func (d *Daemon) handleControlEvent(event types.ControlEvent) {
 	switch event.Command {
 
 	case "stop":
-		event.Send(types.ControlResponse{Status: types.StatusSucceed, Msg: "stopping"})
+		event.Send(types.ControlResponse{Status: types.StatusSucceeded, Msg: "stopping"})
 		event.Close()
 		// NOTE: give the response time to flush before shutting down
 		time.AfterFunc(200*time.Millisecond, d.Stop)
@@ -44,28 +44,38 @@ func (d *Daemon) handleControlEvent(event types.ControlEvent) {
 
 		event.Send(
 			types.ControlResponse{
-				Status: types.StatusSucceed,
+				Status: types.StatusSucceeded,
 				Msg:    fmt.Sprintf("connected to %x", connID),
 			},
 		)
 		event.Close()
 
+	case "disconnect":
+		err := d.manager.Disconnect(d.manager.GetConns()[0].ID)
+		if err != nil {
+			event.Send(types.ControlResponse{Status: types.StatusFailed, Msg: err.Error()})
+			event.Close()
+			return
+		}
+		event.Send(types.ControlResponse{Status: types.StatusSucceeded, Msg: "Closed connection"})
+		event.Close()
+
 	case "conns":
-		conns := d.manager.GetConns(d.ctx)
+		conns := d.manager.GetConns()
 		s := "Open Connections: \n"
 		for _, connInfo := range conns {
 			s += fmt.Sprintf(
-				"conn %d --> %v - %v\n",
+				"conn-%d --> %v :- %v\n",
 				connInfo.ID,
 				connInfo.NodeID.ShortString(),
 				connInfo.IP.String(),
 			)
 		}
-		event.Send(types.ControlResponse{Status: types.StatusSucceed, Msg: s})
+		event.Send(types.ControlResponse{Status: types.StatusSucceeded, Msg: s})
 		event.Close()
 
 	case "ping":
-		stream, err := d.manager.OpenStream(d.ctx, types.ConnID(1))
+		stream, err := d.manager.OpenStream(d.ctx, d.manager.GetConns()[0].ID)
 		if err != nil {
 			event.Send(
 				types.ControlResponse{
@@ -89,7 +99,7 @@ func (d *Daemon) handleControlEvent(event types.ControlEvent) {
 		}
 		event.Send(
 			types.ControlResponse{
-				Status: types.StatusSucceed,
+				Status: types.StatusSucceeded,
 				Msg:    "Waiting for pong!" + string(types.ConnID(1)),
 			},
 		)
@@ -105,7 +115,7 @@ func (d *Daemon) handleControlEvent(event types.ControlEvent) {
 			return
 		}
 		if string(res[:n]) == "Pong!" {
-			event.Send(types.ControlResponse{Status: types.StatusSucceed, Msg: "Pong!"})
+			event.Send(types.ControlResponse{Status: types.StatusSucceeded, Msg: "Pong!"})
 			event.Close()
 			return
 		}
@@ -113,9 +123,9 @@ func (d *Daemon) handleControlEvent(event types.ControlEvent) {
 		event.Close()
 
 	default:
-		event.Send(types.ControlResponse{Status: types.StatusSucceed, Msg: "Hello"})
+		event.Send(types.ControlResponse{Status: types.StatusSucceeded, Msg: "Hello"})
 		time.Sleep(3 * time.Second)
-		event.Send(types.ControlResponse{Status: types.StatusSucceed, Msg: "Hello"})
+		event.Send(types.ControlResponse{Status: types.StatusSucceeded, Msg: "Hello"})
 		event.Close()
 	}
 }

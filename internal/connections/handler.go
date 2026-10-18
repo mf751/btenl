@@ -24,6 +24,15 @@ func (c *ConnectionMux) handleConn(
 		}
 		stream, err := conn.AcceptStream(mCtx)
 		if err != nil {
+			if mCtx.Err() != nil {
+				c.state.DeleteConn(conn.ID())
+				ev := types.ConnectionEvent{
+					Event:  types.NewEvent(types.EventTypeConnectionClosed),
+					ConnID: conn.ID(),
+				}
+				sink.Connections(ev)
+				return
+			}
 			ev := types.ConnectionEvent{
 				Event:  types.NewEvent(types.EventTypeConnectionError),
 				ConnID: conn.ID(),
@@ -32,7 +41,7 @@ func (c *ConnectionMux) handleConn(
 			continue
 		}
 
-		go handleStream(mCtx, stream, conn, sink)
+		handleStream(mCtx, stream, conn, sink)
 	}
 }
 

@@ -48,3 +48,10 @@ func (s *State) GetAllConns() []types.ConnInfo {
 	}
 	return conns
 }
+
+func (s *State) DeleteConn(connID types.ConnID) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	delete(s.conns, connID)
+}

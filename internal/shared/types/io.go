@@ -9,7 +9,8 @@ type ControlRequest struct {
 type ControlResponseStatus uint8
 
 const (
-	StatusSucceed ControlResponseStatus = iota
+	StatusSucceeded ControlResponseStatus = iota
+	StatusFailed
 	StatusDaemonDied
 	StatusDaemonError
 	StatusInvalidRequest
